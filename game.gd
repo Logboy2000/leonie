@@ -26,7 +26,7 @@ Should winning be possible? Theoretically possible to win, just like how Leonie 
 """
 
 extends Control
-
+var wait_disabled = false
 @onready var root: SubViewportContainer = $"../.."
 @onready var meth_bar: ProgressBar = %MethBar
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -105,10 +105,12 @@ func _ready() -> void:
 	show_message("Leonie, you need to get yourself together.")
 
 func _process(delta):
+	if Input.is_key_pressed(KEY_BRACKETLEFT):
+		true_win()
 	if not typing:
 		if meth >= 95 and not in_recovery_sequence and not recovery_mode:
 			high_meth_timer += delta
-			if high_meth_timer >= 30.0:
+			if high_meth_timer >= 30.0 or wait_disabled == true:
 				start_recovery_sequence()
 		else:
 			high_meth_timer = 0.0
@@ -123,6 +125,7 @@ func _process(delta):
 		return
 		
 	type_index += 1
+	
 	%TextBoop.play()
 	message_label.visible_characters = type_index
 	
@@ -133,8 +136,6 @@ func _process(delta):
 			type_timer = 0.2
 		".", "!", "?":
 			type_timer = 0.75
-		"~":
-			type_timer = 2
 		_:
 			type_timer = type_delay
 
@@ -231,6 +232,9 @@ func update_button_text():
 
 func _on_cope_button_pressed() -> void:
 	if recovery_mode:
+		_water += 3
+		_meth -= 3
+		normalize()
 		strain = 0
 		new_turn("recovery_calm")
 		return
@@ -248,7 +252,10 @@ func glitch():
 
 func _on_wait_button_pressed() -> void:
 	if recovery_mode:
-		water += 2
+		_water += 5
+		_meth -= 5
+		normalize()
+		
 		strain = 0
 		new_turn("recovery_wait")
 		return
@@ -266,7 +273,9 @@ func _on_wait_button_pressed() -> void:
 
 func _on_reach_button_pressed() -> void:
 	if recovery_mode:
-		water += 10
+		_water += 10
+		_meth -= 10
+		normalize()
 		strain = 0
 		show_message("They answer. You speak. It's real.")
 		new_turn("recovery_reach")
@@ -300,7 +309,10 @@ func _on_reach_button_pressed() -> void:
 	new_turn(action_result)
 
 func new_turn(action: String = ""):
-	high_meth_timer = 30.0
+	if water == 100:
+		true_win()
+		return
+	high_meth_timer = 0.0
 	update_button_text()
 	turn += 1
 	turn_label.text = "Turn " + str(turn)
@@ -492,6 +504,7 @@ func new_turn(action: String = ""):
 	if meth == 100:
 		false_win()
 		return
+
 	
 	# Filter repeats
 	var valid_options = []
@@ -528,11 +541,23 @@ func false_win():
 	show_message("I did it... But why... I should have waited longer")
 	animation_player.play("false_win")
 	await animation_player.animation_finished
-	
+	$MarginContainer/VBoxContainer/HBoxContainer2/MethBar/MarginContainer/WaterLabel.visible = false
 	glitch()
 	await animation_player.animation_finished
 	Audio.stop_all_sound()
 	get_tree().reload_current_scene()
+
+
+func true_win():
+	show_message("I'm still here...")
+	type_delay = 0.5
+	$MarginContainer/VBoxContainer/HBoxContainer2/MethBar/MarginContainer/MethLabel.visible = false
+	animation_player.play("true_win")
+	animation_player.play("false_win")
+	Audio.fade_out_music(5)
+	await animation_player.animation_finished
+	get_tree().quit()
+	
 
 func start_recovery_sequence():
 	in_recovery_sequence = true
@@ -573,5 +598,6 @@ func start_recovery_sequence():
 	%WaitButton.disabled = false
 	%ReachButton.disabled = false
 	
+	update_music()
 	update_button_text()
 	new_turn("recovery_start")
