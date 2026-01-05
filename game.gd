@@ -108,7 +108,7 @@ func _process(delta):
 	if not typing:
 		if meth >= 95 and not in_recovery_sequence and not recovery_mode:
 			high_meth_timer += delta
-			if high_meth_timer >= 0.0:
+			if high_meth_timer >= 30.0:
 				start_recovery_sequence()
 		else:
 			high_meth_timer = 0.0
