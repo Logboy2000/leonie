@@ -1,0 +1,7 @@
+SFX:
+	Dialogue Text SFX - https://ad-sounds.itch.io/dialog-text-sound-effects
+	Cinematic Glitch sound effects - https://drive.google.com/drive/folders/15BNhlMcyl6lvslTBBKM0wOyviKp_CimQ
+
+"Music":
+	DarkAmbience - Matthew Mott (https://gitlab.com/orbweaver/DarkAmbience/)
+	In the Outer Wilds - Helynt (https://www.youtube.com/watch?v=RzGnRVnBpP4)
